@@ -6,6 +6,8 @@ crud.py
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from . import models, schemas, markdown_utils
+import re
+from .schemas import PostCreate
 
 async def get_posts(db: AsyncSession, skip: int = 0, limit: int = 10):
     result = await db.execute(
@@ -19,9 +21,18 @@ async def get_post_by_slug(db: AsyncSession, slug: str):
     )
     return result.scalars().first()
 
-async def create_post(db: AsyncSession, post: schemas.PostCreate):
-    html = markdown_utils.convert_markdown_to_html(post.markdown)
-    db_post = models.Post(**post.model_dump(), html=html)
+async def create_post(db: AsyncSession, post: PostCreate):
+    slug = post.slug or slugify(post.title)
+    markdown = post.markdown or post.content  # or convert_to_markdown(post.content)
+    html = markdown_utils.convert_markdown_to_html(markdown)
+
+    db_post = models.Post(
+        title=post.title,
+        content=post.content,
+        slug=slug,
+        markdown=markdown,
+        html=html
+    )
     db.add(db_post)
     await db.commit()
     await db.refresh(db_post)
@@ -42,3 +53,12 @@ async def delete_post(db: AsyncSession, slug: str):
     if db_post:
         await db.delete(db_post)
         await db.commit()
+
+# Util
+def slugify(title: str) -> str:
+    """
+    Auto-generate slug from title.
+    :param title: post title
+    :return: slugged title
+    """
+    return re.sub(r'\W+', '-', title.lower()).strip('-')

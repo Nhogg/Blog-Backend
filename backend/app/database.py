@@ -1,24 +1,21 @@
 """
-databse.py
-    Define SQLAlchemy ORM model for DB interaction and posting.
+database.py
 """
 
 # Imports
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 import os
+from typing import AsyncGenerator
 
-SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL")
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URI, connect_args={"check_same_thread": False}
+async_engine = create_async_engine(DATABASE_URL, echo=True)
+
+async_session = async_sessionmaker(
+    async_engine, expire_on_commit=False, class_=AsyncSession
 )
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+# FASTAPI dependency function
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    async with async_session() as session:
+        yield session

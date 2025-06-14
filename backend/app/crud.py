@@ -8,6 +8,7 @@ from sqlalchemy.future import select
 from . import models, schemas, markdown_utils
 import re
 from .schemas import PostCreate
+from datetime import datetime
 
 async def get_posts(db: AsyncSession, skip: int = 0, limit: int = 10):
     result = await db.execute(
@@ -31,7 +32,8 @@ async def create_post(db: AsyncSession, post: PostCreate):
         content=post.content,
         slug=slug,
         markdown=markdown,
-        html=html
+        html=html,
+        created_at=datetime.datetime.now()
     )
     db.add(db_post)
     await db.commit()

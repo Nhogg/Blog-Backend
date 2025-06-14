@@ -33,7 +33,7 @@ async def create_post(db: AsyncSession, post: PostCreate):
         slug=slug,
         markdown=markdown,
         html=html,
-        created_at=datetime.datetime.now()
+        created_at=datetime.now()
     )
     db.add(db_post)
     await db.commit()

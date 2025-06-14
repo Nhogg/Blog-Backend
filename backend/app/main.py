@@ -11,7 +11,6 @@ from contextlib import asynccontextmanager
 
 from . import schemas, models, crud, database
 
-
 # Lifespan context manager for startup logic
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -19,7 +18,6 @@ async def lifespan(app: FastAPI):
     async with database.async_engine.begin() as conn:
         await conn.run_sync(models.Base.metadata.create_all)
     yield
-
 
 app = FastAPI(lifespan=lifespan)
 

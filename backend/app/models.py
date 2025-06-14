@@ -18,6 +18,7 @@ class Post(Base):
     slug = Column(String, index=True, unique=True)
     markdown = Column(String)
     html = Column(Text)
+    content = Column(Text)
     created_at = Column(DateTime, default=datetime.time(datetime.now()))
 
 
